@@ -1,11 +1,25 @@
+const chromium = require('@sparticuz/chromium');
+const puppeteerCore = require('puppeteer-core');
 const puppeteer = require('puppeteer');
-const ExcelJS = require('exceljs');
 
 async function scrapeMaps(searchKey, location, limit) {
-    const browser = await puppeteer.launch({
-        headless: false,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    let browser;
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+
+    if (isProduction) {
+        browser = await puppeteerCore.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
+    } else {
+        browser = await puppeteer.launch({
+            headless: false,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+    }
+
     const page = await browser.newPage();
 
     try {
